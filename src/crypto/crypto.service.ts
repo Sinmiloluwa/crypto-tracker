@@ -8,7 +8,7 @@ import { Logger } from '@nestjs/common';
 export class CryptoService implements OnModuleInit{
 
     private cryptoCache = new Map();
-    private readonly UPDATE_INTERVAL = 60000;
+    private readonly UPDATE_INTERVAL = 5000;
     private logger: Logger = new Logger('CryptoGateway');
     constructor(
         private readonly httpService: HttpService,

@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { CryptoModule } from './crypto/crypto.module';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { AuthModule } from './auth/auth.module';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
@@ -11,7 +13,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     ConfigModule.forRoot({
     isGlobal: true
     }),
-    EventEmitterModule.forRoot()
+    EventEmitterModule.forRoot(),
+    AuthModule,
+    DatabaseModule
 ],
   controllers: [AppController],
   providers: [AppService],

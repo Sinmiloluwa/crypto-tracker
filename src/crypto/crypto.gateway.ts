@@ -50,7 +50,6 @@ export class CryptoGateway implements OnGatewayInit, OnGatewayConnection, OnGate
           
           this.clientSubscriptions.forEach((subscriptions, clientId) => {
             if (subscriptions.has(payload.symbol)) {
-                console.log('okay')
               this.server.to(clientId).emit('priceUpdate', payload);
             }
           });
