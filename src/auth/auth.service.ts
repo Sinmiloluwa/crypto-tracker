@@ -7,12 +7,14 @@ import { DATABASE_CONNECTION } from '../database/database-connection';
 import { eq } from 'drizzle-orm';
 import { users } from '../drizzle/schema';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject(DATABASE_CONNECTION)
     private db: NodePgDatabase<typeof schema>,
+    private jwtService: JwtService
   ) {}
 
   // async getFirstRole() {
@@ -20,9 +22,7 @@ export class AuthService {
   //   return existingUserRole;
   // }
   async create(createAuthDto: CreateAuthDto) {
-    const user = await this.db.query.users.findFirst({
-      where: (users) => eq(users.email, createAuthDto.email),
-    });
+    const user = await this.validateUser({ email: createAuthDto.email });
 
     if(user) {
       throw new BadRequestException('User already exists');
@@ -36,6 +36,39 @@ export class AuthService {
     });
 
     return {message: "User Created"};
+  }
+
+  async login({ email, password }: { email: string; password: string })
+  {
+    const user = await this.validateUser({ email: email });
+
+    if(!user) {
+      throw new BadRequestException('Invalid Credentialss');
+    }
+
+
+
+    const checkPassword = await bcrypt.compare(password, user.password);
+
+    if(!checkPassword) {
+      throw new BadRequestException('Invalid credentials');
+    }
+
+    const payload = { sub: user.id, email: user.email };
+
+    const access_token = await this.jwtService.signAsync(payload);
+
+    const { password: _, ...userWithoutPassword } = user;
+
+    return { ...userWithoutPassword, access_token };
+  }
+
+  async validateUser({email}: {email: string}) {
+    const user = await this.db.query.users.findFirst({
+      where: (users) => eq(users.email, email),
+    });
+
+    return user;
   }
 
   findAll() {
