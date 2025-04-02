@@ -25,6 +25,7 @@ import * as schema from '../drizzle/schema';
             },
             inject: [ConfigService]
         }
-    ]
+    ],
+    exports: [DATABASE_CONNECTION]
 })
 export class DatabaseModule {}
