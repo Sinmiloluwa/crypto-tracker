@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { DatabaseModule } from './database/database.module';
     }),
     EventEmitterModule.forRoot(),
     AuthModule,
-    DatabaseModule
+    DatabaseModule,
+    UsersModule
 ],
   controllers: [AppController],
   providers: [AppService],
