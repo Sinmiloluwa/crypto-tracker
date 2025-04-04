@@ -10,7 +10,7 @@ export class UsersController {
     @UseGuards(AuthGuard)
     @Get('profile')
     async getProfile(@Request() req): Promise<UserEntity> {
-        const userId = req.user.sub;
+        const userId = req.user.id;
         const user = await this.userService.getProfile(userId);
         return new UserEntity({
             id: user.id,

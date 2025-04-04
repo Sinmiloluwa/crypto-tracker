@@ -8,6 +8,20 @@
       "when": 1743523535039,
       "tag": "0000_brave_barracuda",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1743779567869,
+      "tag": "0001_add-user-subscriptions",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1743797185891,
+      "tag": "0002_add-user-subscriptions",
+      "breakpoints": true
     }
   ]
 }

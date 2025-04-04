@@ -46,15 +46,13 @@ export class AuthService {
       throw new BadRequestException('Invalid Credentialss');
     }
 
-
-
     const checkPassword = await bcrypt.compare(password, user.password);
 
     if(!checkPassword) {
       throw new BadRequestException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, user: user };
 
     const access_token = await this.jwtService.signAsync(payload);
 

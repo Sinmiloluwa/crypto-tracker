@@ -10,8 +10,8 @@ export class CryptoController {
         return await this.cryptoService.getCryptoPrice(symbol);
     }
 
-    @Post('subscribe/:symbol')
-    async subscribeToRealTimeUpdates(@Param('symbol') symbol: string) {
-        return await this.cryptoService.subscribeToRealTimeUpdates(symbol);
-    }
+    // @Post('subscribe/:symbol')
+    // async subscribeToRealTimeUpdates(@Param('symbol') symbol: string) {
+    //     return await this.cryptoService.subscribeToRealTimeUpdates(symbol);
+    // }
 }

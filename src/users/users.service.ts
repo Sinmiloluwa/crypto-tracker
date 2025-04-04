@@ -16,7 +16,6 @@ export class UsersService {
 
       @UseInterceptors(ClassSerializerInterceptor)
       async getProfile(@Param() userId: string) {
-        console.log(userId);
         const user = await this.db.query.users.findFirst({
             where: (users) => eq(users.id, userId),
         })

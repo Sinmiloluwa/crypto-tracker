@@ -3,6 +3,8 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, interval } from 'rxjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Logger } from '@nestjs/common';
+import { CreateSubscriptionDto } from '../subscription/dto/create-subscription.dto';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class CryptoService implements OnModuleInit{
@@ -12,7 +14,8 @@ export class CryptoService implements OnModuleInit{
     private logger: Logger = new Logger('CryptoGateway');
     constructor(
         private readonly httpService: HttpService,
-        private eventEmitter: EventEmitter2
+        private eventEmitter: EventEmitter2,
+        private mailer: MailerService
     ) {}
 
     onModuleInit() {
@@ -114,14 +117,28 @@ export class CryptoService implements OnModuleInit{
         };
     }
 
-    public async subscribeToRealTimeUpdates(symbol: string) {
+    public async subscribeToRealTimeUpdates(dto: CreateSubscriptionDto) {
+        const { symbol, email } = dto;
         const normalizedSymbol = symbol.toUpperCase();
-    
+      
         if (!this.cryptoCache.has(normalizedSymbol)) {
-            await this.getCryptoPrice(normalizedSymbol);
+          const message = await this.getCryptoPrice(normalizedSymbol);
         }
-        
-        this.logger.log(`Added ${normalizedSymbol} to real-time monitoring`);
+
+        console.log(email);
+
+        this.sendMail({ email: email, message: `You have successfully subscribed to ${normalizedSymbol} price updates` });
+      
         return { success: true, symbol: normalizedSymbol };
+      }
+
+      async sendMail(params: { email: string, message: string }) {
+    
+        this.mailer.sendMail({
+            from: 'Crypto Tracker <blvcksimons@gmail.com>',
+            to: params.email,
+            subject: `New Price Update`,
+            text: params.message,
+        });
     }
 }
