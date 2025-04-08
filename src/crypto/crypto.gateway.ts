@@ -9,6 +9,7 @@ import * as schema from '../drizzle/schema';
 import { userSubscriptions } from '../drizzle/schema';
 import { eq, and } from 'drizzle-orm';
 import { JwtService } from '@nestjs/jwt';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @WebSocketGateway({
     cors: {
@@ -20,7 +21,8 @@ export class CryptoGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     constructor(
       @Inject(DATABASE_CONNECTION)
       private db: NodePgDatabase<typeof schema>,
-      private jwtService: JwtService
+      private jwtService: JwtService,
+      private mailer: MailerService,
     ){}
     @WebSocketServer() server: Server;
     private logger: Logger = new Logger('CryptoGateway');
@@ -59,8 +61,10 @@ export class CryptoGateway implements OnGatewayInit, OnGatewayConnection, OnGate
           const upperSymbol = symbol.toUpperCase();
 
           await this.db.delete(userSubscriptions).where(
-            eq(userSubscriptions.clientId, client.id)
-              .and(eq(userSubscriptions.symbol, upperSymbol)),
+            and(
+              eq(userSubscriptions.clientId, client.id),
+              eq(userSubscriptions.symbol, upperSymbol)
+            )
           );
     
           this.logger.log(`Client ${client.id} unsubscribed from ${upperSymbol}`);
@@ -82,17 +86,30 @@ export class CryptoGateway implements OnGatewayInit, OnGatewayConnection, OnGate
           const activeSubscriptions = await this.db
             .select()
             .from(userSubscriptions)
+            .leftJoin(schema.users, eq(userSubscriptions.userId, schema.users.id))
             .where(eq(userSubscriptions.symbol, normalizedSymbol));
         
-          const userIds = activeSubscriptions.map((sub) => sub.userId);
-          console.log(userIds);
+            const userIds = activeSubscriptions.map((sub) => sub.users?.id); 
+          console.log(activeSubscriptions);
         
     
-          this.clientSubscriptions.forEach((subscriptions, clientId) => {
-            if (subscriptions.has(payload.symbol)) {
-              this.logger.log(`Notifying client ${clientId} of ${payload.symbol} price update`);
-              this.server.to(clientId).emit('priceUpdate', payload);
+          activeSubscriptions.forEach((subscription) => {
+          
+            if (subscription.user_subscriptions.symbol === payload.symbol) {
+              this.logger.log(`Notifying client ${subscription.user_subscriptions.clientId} of ${payload.symbol} price update`);
+              this.server.to(subscription.user_subscriptions.clientId).emit('priceUpdate', payload);
+              this.sendEmail(subscription.users?.email, payload.symbol, payload.newPrice);
             }
           });
+        }
+
+        async sendEmail(email: string, symbol: string, newPrice: number) {
+          this.mailer.sendMail({
+            to: email,
+            from: 'blvcksimons@gmail.com',
+            subject: 'Crypto Price Update',
+            text: `The price of ${symbol} you subscribed to has changed.`,
+            html: `<b>The price of ${symbol} you subscribed to has changed. New price is ${newPrice}</b>`,
+          })
         }
 }
