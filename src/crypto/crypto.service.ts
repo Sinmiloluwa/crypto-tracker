@@ -141,4 +141,29 @@ export class CryptoService implements OnModuleInit{
             text: params.message,
         });
     }
+
+    async latestListings()
+    {
+        try{
+            const response = await firstValueFrom(
+                this.httpService.get(
+                    `https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest`, {
+                        headers: {
+                            'X-CMC_PRO_API_KEY': process.env.API_KEY
+                        }
+                    }
+                )
+            )
+
+            if (response.data?.data && response.data.data.length > 0) {
+               return response.data;
+            }
+        } catch (error) {
+            console.log(error);
+            return { 
+                error: 'Failed to fetch cryptocurrency data',
+                details: error.message 
+            };
+        }
+    }
 }
